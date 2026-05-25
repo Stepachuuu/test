@@ -4,13 +4,13 @@ import { locators } from "../helpers/locators.js";
 export class RegisterPage {
   constructor(page) {
     this.page = page;
-    this.firstnameInput = page.locator(locators.firstnameInput);
-    this.lastnameInput = page.locator(locators.lastnameInput);
-    this.emailInput = page.locator(locators.emailInput);
-    this.usernameInput = page.locator(locators.usernameInput);
-    this.phoneInput = page.locator(locators.phoneInput);
-    this.passwordInput = page.locator(locators.passwordInput);
-    this.submitButton = page.locator(locators.submitButton);
+    this.firstname = page.locator(locators.firstnameInput);
+    this.lastname = page.locator(locators.lastnameInput);
+    this.email = page.locator(locators.emailInput);
+    this.username = page.locator(locators.usernameInput);
+    this.phone = page.locator(locators.phoneInput);
+    this.password = page.locator(locators.passwordInput);
+    this.registerButton = page.locator(locators.submitButton);
   }
 
   async goto() {
@@ -18,13 +18,13 @@ export class RegisterPage {
   }
 
   async register(user) {
-    await this.firstnameInput.fill(user.firstname);
-    await this.lastnameInput.fill(user.lastname);
-    await this.emailInput.fill(user.email);
-    await this.usernameInput.fill(user.username);
-    await this.phoneInput.fill(user.phone);
-    await this.passwordInput.fill(user.password);
-    await this.submitButton.click();
+    await this.firstname.fill(user.firstname);
+    await this.lastname.fill(user.lastname);
+    await this.email.fill(user.email);
+    await this.username.fill(user.username);
+    await this.phone.fill(user.phone);
+    await this.password.fill(user.password);
+    await this.registerButton.click();
   }
 
   async expectSuccess() {
@@ -45,19 +45,25 @@ export class RegisterPage {
   }
 
   async expectEmailFormatError() {
-    await expect(this.page.locator(selectors.errorEmailFormat)).toBeVisible();
+    await expect(this.page.locator(locators.errorEmailFormat)).toBeVisible();
   }
 
   async expectPhoneFormatError() {
-    await expect(this.page.locator(selectors.errorPhoneFormat)).toBeVisible();
+    await expect(this.page.locator(locators.errorPhoneFormat)).toBeVisible();
+  }
+
+  async expectEmailAlreadyExistsError(email) {
+    await expect(
+      this.page.locator(locators.errorEmailExists(email)),
+    ).toBeVisible();
   }
 
   async getEmailValue() {
-    return await this.emailInput.inputValue();
+    return await this.email.inputValue();
   }
 
   async fillEmail(email) {
-    await this.emailInput.fill(email);
+    await this.email.fill(email);
   }
 
   async expectRedirectToLogin() {

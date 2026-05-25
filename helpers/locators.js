@@ -19,14 +19,19 @@ export const locators = {
   loginPasswordInput: 'input[name="password"]',
   loginButton: 'button[type="submit"]',
   loginErrorMessage: "text=Неверный email или пароль",
+  emailRequiredError: "text=Email обязателен",
+  passwordRequiredError: "text=Пароль обязателен",
+  registerLink: 'a[href="/register"]',
 
   // Cart
   cartIcon: 'a[href="/cart"]',
-  cartItem: '[class*="border-b"]',
-  removeButton: 'button:has-text("Удалить")',
-  totalPrice: 'span:has-text("Итого:") + span',
-  checkoutButton: 'button:has-text("Оформить заказ")',
-  emptyCartMessage: "text=Ваша корзина пуста.",
+  cartItemRow: '.cart-item, [class*="border-b"]',
+  removeProductBtn:
+    'button:has-text("Удалить"), button:has-text("Remove"), button[aria-label="Удалить"], button[aria-label="Remove"], button[data-testid="remove"], button[class*="remove"]',
+  totalPriceSpan: 'span:has-text("Итого:") + span',
+  checkoutBtn: 'button:has-text("Оформить заказ")',
+  emptyCartText: "text=Ваша корзина пуста",
+  orderSuccessToast: "text=Заказ успешно создан",
 
   // Shop
   productCard: 'a[href^="/product/"]',
@@ -34,4 +39,5 @@ export const locators = {
   productPrice: "span.font-bold",
   addToCartButton: 'button:has-text("В корзину")',
   successAddMessage: "text=Товар добавлен в корзину",
+  cartIcon: 'a[href="/cart"]',
 };

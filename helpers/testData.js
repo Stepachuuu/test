@@ -1,4 +1,4 @@
-export const getTestUser = () => {
+export const getNewUser = () => {
   const timestamp = Date.now();
   return {
     email: `testEmail_${timestamp}@gmail.com`,

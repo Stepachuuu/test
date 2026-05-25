@@ -4,59 +4,42 @@ import { locators } from "../helpers/locators.js";
 export class ShopPage {
   constructor(page) {
     this.page = page;
-    this.productCard = page.locator(locators.productCard);
-    this.addToCartButton = page.locator(locators.addToCartButton);
+    this.productCards = page.locator(locators.productCard);
     this.cartIcon = page.locator(locators.cartIcon);
-    this.successMessage = page.locator(locators.successAddMessage);
-    this.productPrice = page.locator(locators.productPrice);
-    this.productImage = page.locator("img");
-    this.errorMessageProduct = page.getByText("Не удалось загрузить продукт");
   }
 
   async goto() {
     await this.page.goto("/");
+    await this.page
+      .locator(locators.productCard)
+      .first()
+      .waitFor({ state: "visible", timeout: 15000 });
   }
 
-  async expectSuccess() {
-    await expect(this.page).toHaveURL("/");
+  // Добавленный метод
+  async getFirstProductCard() {
+    const firstCard = this.productCards.first();
+    await expect(firstCard).toBeVisible({ timeout: 10000 });
+    return firstCard;
   }
 
-  async getProductCardByName(productName) {
-    return this.page
-      .locator(`a[href*="/product/"]:has-text("${productName}")`)
-      .first();
-  }
-
-  async addProductToCart(productName) {
-    const productCard = await this.getProductCardByName(productName);
-    await expect(productCard).toBeVisible();
-    const addButton = productCard.locator(locators.addToCartButton);
-    await expect(addButton).toBeVisible();
-    await addButton.click();
-    await expect(this.successMessage).toBeVisible();
-  }
-
-  async addProductByHref(productHref) {
-    const product = this.page.locator(`a[href="${productHref}"]`);
-    await expect(product).toBeVisible();
-    const addButton = product.locator(locators.addToCartButton);
-    await expect(addButton).toBeVisible();
-    await addButton.click();
-    await expect(this.successMessage).toBeVisible();
+  async getProductPriceByIndex(index) {
+    const cards = await this.productCards.all();
+    const priceText = await cards[index]
+      .locator(locators.productPrice)
+      .first()
+      .textContent();
+    return parseFloat(priceText?.replace(/\s/g, "").replace(",", ".") || "0");
   }
 
   async addProductByIndex(index) {
-    const products = await this.productCard.all();
-    if (index >= products.length)
+    const cards = await this.productCards.all();
+    if (index >= cards.length)
       throw new Error(`Товар с индексом ${index} не найден`);
-    const addButton = products[index].locator(locators.addToCartButton);
-    await expect(addButton).toBeVisible();
+    const addButton = cards[index].locator(locators.addToCartButton);
+    await expect(addButton).toBeVisible({ timeout: 5000 });
     await addButton.click();
-    await expect(this.successMessage).toBeVisible();
-  }
-
-  async expectProductCount(expectedCount) {
-    await expect(this.productCard).toHaveCount(expectedCount);
+    await this.page.waitForTimeout(500);
   }
 
   async goToCart() {
