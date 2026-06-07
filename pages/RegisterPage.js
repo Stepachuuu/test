@@ -1,66 +1,59 @@
-import { expect } from "@playwright/test";
-import { locators } from "../helpers/locators.js";
+const { BasePage } = require("./BasePage");
 
-export class RegisterPage {
+class RegisterPage extends BasePage {
   constructor(page) {
-    this.page = page;
-    this.firstnameInput = page.locator(locators.firstnameInput);
-    this.lastnameInput = page.locator(locators.lastnameInput);
-    this.emailInput = page.locator(locators.emailInput);
-    this.usernameInput = page.locator(locators.usernameInput);
-    this.phoneInput = page.locator(locators.phoneInput);
-    this.passwordInput = page.locator(locators.passwordInput);
-    this.submitButton = page.locator(locators.submitButton);
+    super(page);
   }
 
-  async goto() {
-    await this.page.goto("/register");
+  firstnameInput() {
+    return this.page.locator('input[name="firstname"]');
+  }
+  lastnameInput() {
+    return this.page.locator('input[name="lastname"]');
+  }
+  emailInput() {
+    return this.page.locator('input[name="email"]');
+  }
+  usernameInput() {
+    return this.page.locator('input[name="username"]');
+  }
+  phoneInput() {
+    return this.page.locator('input[name="phoneNumber"]');
+  }
+  passwordInput() {
+    return this.page.locator('input[name="password"]');
+  }
+  registerButton() {
+    return this.page.locator('form button[type="submit"]');
+  }
+  loginLink() {
+    return this.page.locator('a[href="/login"]');
+  }
+  formErrors() {
+    return this.page.locator("p.text-destructive");
   }
 
-  async register(user) {
-    await this.firstnameInput.fill(user.firstname);
-    await this.lastnameInput.fill(user.lastname);
-    await this.emailInput.fill(user.email);
-    await this.usernameInput.fill(user.username);
-    await this.phoneInput.fill(user.phone);
-    await this.passwordInput.fill(user.password);
-    await this.submitButton.click();
+  async navigate() {
+    await this.goto("/register");
   }
 
-  async expectSuccess() {
-    await expect(this.page).toHaveURL("/login");
+  async fillForm({ firstname, lastname, email, username, phone, password }) {
+    if (firstname !== undefined) await this.firstnameInput().fill(firstname);
+    if (lastname !== undefined) await this.lastnameInput().fill(lastname);
+    if (email !== undefined) await this.emailInput().fill(email);
+    if (username !== undefined) await this.usernameInput().fill(username);
+    if (phone !== undefined) await this.phoneInput().fill(phone);
+    if (password !== undefined) await this.passwordInput().fill(password);
   }
 
-  async expectErrorOnPage() {
-    await expect(this.page).toHaveURL("/register");
+  async submit() {
+    await this.registerButton().click();
   }
 
-  async expectFieldErrors() {
-    await expect(this.page.getByText("Имя обязательно")).toBeVisible();
-    await expect(this.page.getByText("Фамилия обязательна")).toBeVisible();
-    await expect(this.page.getByText("Email обязателен")).toBeVisible();
-    await expect(this.page.getByText("Username обязателен")).toBeVisible();
-    await expect(this.page.getByText("Телефон обязателен")).toBeVisible();
-    await expect(this.page.getByText("Пароль обязателен")).toBeVisible();
-  }
-
-  async expectEmailFormatError() {
-    await expect(this.page.locator(selectors.errorEmailFormat)).toBeVisible();
-  }
-
-  async expectPhoneFormatError() {
-    await expect(this.page.locator(selectors.errorPhoneFormat)).toBeVisible();
-  }
-
-  async getEmailValue() {
-    return await this.emailInput.inputValue();
-  }
-
-  async fillEmail(email) {
-    await this.emailInput.fill(email);
-  }
-
-  async expectRedirectToLogin() {
-    await expect(this.page).toHaveURL("/login");
+  async register(data) {
+    await this.fillForm(data);
+    await this.submit();
   }
 }
+
+module.exports = { RegisterPage };

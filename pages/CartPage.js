@@ -1,76 +1,42 @@
-import { expect } from "@playwright/test";
-import { locators } from "../helpers/locators.js";
+const { BasePage } = require("./BasePage");
 
-export class CartPage {
+class CartPage extends BasePage {
   constructor(page) {
-    this.page = page;
-    this.cartIcon = page.locator(locators.cartIcon);
-    this.removeButton = page.locator(locators.removeButton);
-    this.totalPrice = page.locator(locators.totalPrice);
-    this.checkoutButton = page.locator(locators.checkoutButton);
-    this.emptyCartMessage = page.locator(locators.emptyCartMessage);
-    this.successMessage = page.locator(locators.successAddMessage);
-    this.orderSuccessMessage = page.locator(locators.orderSuccessMessage);
+    super(page);
   }
 
-  async goToCart() {
-    await this.cartIcon.click();
+  cartTitle() {
+    return this.page.locator("h1.text-3xl.font-bold");
+  }
+  cartItems() {
+    return this.page.locator(
+      "div.flex.items-center.justify-between.p-4.border-b",
+    );
+  }
+  removeButtons() {
+    return this.page.locator("button.h-8.rounded-md.bg-destructive");
+  }
+  checkoutButton() {
+    return this.page.locator("button.mt-6.w-full");
+  }
+  emptyCartMessage() {
+    return this.page.locator("p.p-6.text-center.text-muted-foreground");
+  }
+  totalAmount() {
+    return this.page
+      .locator("div.flex.justify-between.text-lg.font-bold span")
+      .last();
   }
 
-  async successAdd() {
-    await expect(this.successMessage).toBeVisible();
+  async navigate() {
+    await this.goto("/cart");
   }
-
-  async expectProductInCart(productName) {
-    await expect(this.page.getByText(productName)).toBeVisible();
+  async removeFirstItem() {
+    await this.removeButtons().first().click();
   }
-
-  async removeProduct() {
-    await this.removeButton.first().click();
-  }
-
-  async getTotalPrice() {
-    await expect(this.totalPrice).toBeVisible();
-    return await this.totalPrice.textContent();
-  }
-
-  async expectEmptyCart() {
-    await expect(this.emptyCartMessage).toBeVisible();
-  }
-
-  async clearCart() {
-    await this.page.goto("/cart");
-
-    // Ждём загрузки страницы корзины (появление сообщения "Ваша корзина пуста" или кнопок удаления)
-    await Promise.race([
-      this.emptyCartMessage.waitFor({ timeout: 5000 }),
-      this.removeButton.first().waitFor({ timeout: 5000 }),
-    ]);
-
-    // Удаляем все товары, пока они есть
-    let removeButtons = await this.removeButton.all();
-    while (removeButtons.length > 0) {
-      // Кликаем по первой кнопке "Удалить"
-      await removeButtons[0].click();
-      // Ждём, пока элемент исчезнет (или обновится список)
-      await this.page.waitForTimeout(300);
-      // Пересчитываем кнопки
-      removeButtons = await this.removeButton.all();
-    }
-
-    await this.expectEmptyCart();
-  }
-
   async checkout() {
-    await this.checkoutButton.click();
-  }
-
-  async expectOrderSuccess() {
-    await expect(this.orderSuccessMessage).toBeVisible();
-  }
-
-  async getCartTotalPrice() {
-    const totalText = await this.getTotalPrice();
-    return parseFloat(totalText?.split(" ")[0]?.replace(",", ".") || "0");
+    await this.checkoutButton().click();
   }
 }
+
+module.exports = { CartPage };
