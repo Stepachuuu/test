@@ -48,6 +48,7 @@ test.describe("Profile page", () => {
   // PFL-004 — занятый username
   test("PFL-004 | Attempt to use existing username", async ({ page }) => {
     await profile.updateUsername("user2");
+    await profile.updatePhone("+37529292929");
 
     const toast = await profile.waitForToast();
     await expect(toast).toContainText("already exists");

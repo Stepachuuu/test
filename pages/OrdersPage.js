@@ -28,8 +28,15 @@ class OrdersPage extends BasePage {
     await this.goto("/orders");
   }
 
-  async expandFirstOrder() {
-    await this.accordionTriggers().first().click();
+  async expandOrder(index = 0) {
+    await this.accordionTriggers().nth(index).click();
+  }
+
+  async expandOrderById(orderId) {
+    const trigger = this.page.locator(
+      `h3 button:has-text("Заказ #${orderId}")`,
+    );
+    await trigger.click();
   }
 }
 

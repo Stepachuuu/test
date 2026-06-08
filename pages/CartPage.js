@@ -31,9 +31,17 @@ class CartPage extends BasePage {
   async navigate() {
     await this.goto("/cart");
   }
-  async removeFirstItem() {
-    await this.removeButtons().first().click();
+  async removeItem(index = 0) {
+    await this.removeButtons().nth(index).click();
   }
+
+  async removeItemByName(productName) {
+    const row = this.page.locator(
+      `div.flex.items-center.justify-between.p-4.border-b:has-text("${productName}")`,
+    );
+    await row.locator("button.h-8.rounded-md.bg-destructive").click();
+  }
+
   async checkout() {
     await this.checkoutButton().click();
   }

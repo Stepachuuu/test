@@ -18,7 +18,7 @@ test.describe("Orders page", () => {
   test("ORD-001 | Expand order and view items", async ({ page }) => {
     const home = new HomePage(page);
     await home.navigate();
-    await home.addFirstProductToCart();
+    await home.addProductToCart(1);
     await expect(page.locator("[data-sonner-toast]").first()).toContainText(
       "Товар добавлен в корзину",
     );
@@ -66,7 +66,7 @@ test.describe("Orders page", () => {
     // Убеждаемся, что есть хотя бы один заказ (создаём, если нет)
     const home = new HomePage(page);
     await home.navigate();
-    await home.addFirstProductToCart();
+    await home.addProductToCart(1);
     await expect(page.locator("[data-sonner-toast]").first()).toContainText(
       "Товар добавлен в корзину",
     );

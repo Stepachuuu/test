@@ -15,9 +15,9 @@ test.describe("Product detail page", () => {
   test("PROD-001 | Display product details for product ID=101", async ({
     page,
   }) => {
-    await pd.navigateToProduct(101);
+    await pd.navigateToProduct(1);
 
-    await expect(page).toHaveURL(/\/product\/101/);
+    await expect(page).toHaveURL(/\/product\/1/);
     await expect(pd.productName()).toBeVisible();
     await expect(pd.productCategory()).toBeVisible();
     await expect(pd.productPrice()).toBeVisible();
@@ -28,7 +28,7 @@ test.describe("Product detail page", () => {
 
   // PROD-002 — добавление товара в корзину со страницы товара
   test("PROD-002 | Add product to cart from detail page", async ({ page }) => {
-    await pd.navigateToProduct(101);
+    await pd.navigateToProduct(1);
     await pd.addToCart();
 
     const toast = await pd.waitForToast();
@@ -48,7 +48,7 @@ test.describe("Product detail page", () => {
 
   // PROD-004 — формат цены
   test("PROD-004 | Price formatting check", async ({ page }) => {
-    await pd.navigateToProduct(101);
+    await pd.navigateToProduct(1);
 
     const priceText = await pd.productPrice().textContent();
     expect(priceText).toMatch(/\d+[\.,]?\d*\s*руб\./);

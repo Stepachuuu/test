@@ -4,6 +4,27 @@ const { loginAs } = require("../../helpers/auth");
 
 const BASE_URL = process.env.BASE_URL;
 
+const TEST_PRODUCT = {
+  name: `AutoTest Product ${Date.now()}`,
+  description: "Auto test description",
+  price: "99.99",
+  urlImage:
+    "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=500",
+};
+
+const EDITED_PRODUCT = {
+  name: `Edited Product ${Date.now()}`,
+  price: "199.99",
+};
+
+const DELETED_PRODUCT = {
+  name: `ToDelete ${Date.now()}`,
+  description: "Will be deleted",
+  price: "1.00",
+  urlImage:
+    "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=500",
+};
+
 test.describe("Admin panel", () => {
   let admin;
 
@@ -49,16 +70,10 @@ test.describe("Admin panel", () => {
       await expect(admin.tableRows().first()).toBeVisible();
 
       await expect(page.locator("th").filter({ hasText: "ID" })).toBeVisible();
-      await expect(
-        page.locator("th").filter({ hasText: "Название" }),
-      ).toBeVisible();
-      await expect(
-        page.locator("th").filter({ hasText: "Цена" }),
-      ).toBeVisible();
-      await expect(
-        page.locator("th").filter({ hasText: "Категория" }),
-      ).toBeVisible();
-
+      await expect(admin.tableHeaderId()).toBeVisible();
+      await expect(admin.tableHeaderName()).toBeVisible();
+      await expect(admin.tableHeaderPrice()).toBeVisible();
+      await expect(admin.tableHeaderCategory()).toBeVisible();
       await expect(admin.editButtons().first()).toBeVisible();
       await expect(admin.deleteButtons().first()).toBeVisible();
     });
@@ -69,13 +84,7 @@ test.describe("Admin panel", () => {
       await admin.createProductButton().click();
       await expect(admin.modal()).toBeVisible();
 
-      await admin.fillProductForm({
-        name: `AutoTest Product ${Date.now()}`,
-        description: "Auto test description",
-        price: "99.99",
-        urlImage:
-          "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=500",
-      });
+      await admin.fillProductForm(TEST_PRODUCT);
       await admin.saveModalButton().click();
 
       const toast = page.locator("[data-sonner-toast]").first();
@@ -92,9 +101,9 @@ test.describe("Admin panel", () => {
 
       const newName = `Edited Product ${Date.now()}`;
       await admin.productNameInput().clear();
-      await admin.productNameInput().fill(newName);
+      await admin.productNameInput().fill(EDITED_PRODUCT.name);
       await admin.productPriceInput().clear();
-      await admin.productPriceInput().fill("199.99");
+      await admin.productPriceInput().fill(EDITED_PRODUCT.price);
       await admin.saveModalButton().click();
 
       const toast = page.locator("[data-sonner-toast]").first();
@@ -106,21 +115,15 @@ test.describe("Admin panel", () => {
     test("ADM-PROD-004 | Delete product", async ({ page }) => {
       await admin.navigateToProducts();
       await admin.createProductButton().click();
+      await expect(admin.modal()).toBeVisible();
 
-      const productName = `ToDelete ${Date.now()}`;
-      await admin.fillProductForm({
-        name: productName,
-        description: "Will be deleted",
-        price: "1.00",
-        urlImage:
-          "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=500",
-      });
+      await admin.fillProductForm(DELETED_PRODUCT);
       await admin.saveModalButton().click();
-      // Ждём создания
+
       await expect(page.locator("[data-sonner-toast]").first()).toBeVisible();
 
-      // Находим строку с этим названием и кликаем «Удалить»
-      const row = page.locator("tr").filter({ hasText: productName });
+      const row = page.locator("tr").filter({ hasText: DELETED_PRODUCT.name });
+      await expect(row).toBeVisible({ timeout: 5000 });
       await row.locator("button.h-8.rounded-md.bg-destructive").click();
 
       const toast = page.locator("[data-sonner-toast]").first();

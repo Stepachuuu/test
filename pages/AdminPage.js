@@ -19,6 +19,18 @@ class AdminPage extends BasePage {
   sidebarOrdersLink() {
     return this.page.locator('nav a[href="/admin/orders"]');
   }
+  tableHeaderId() {
+    return this.page.locator("th").filter({ hasText: "ID" });
+  }
+  tableHeaderName() {
+    return this.page.locator("th").filter({ hasText: "Название" });
+  }
+  tableHeaderPrice() {
+    return this.page.locator("th").filter({ hasText: "Цена" });
+  }
+  tableHeaderCategory() {
+    return this.page.locator("th").filter({ hasText: "Категория" });
+  }
   logoutButton() {
     return this.page.locator("button.w-full.justify-start.gap-3");
   }

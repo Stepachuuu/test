@@ -37,8 +37,14 @@ class HomePage extends BasePage {
   async clickFirstProduct() {
     await this.productCards().first().click();
   }
-  async addFirstProductToCart() {
-    await this.addToCartButtons().first().click();
+
+  async addProductToCart(index = 0) {
+    await this.addToCartButtons().nth(index).click();
+  }
+
+  async addProductToCartByName(productName) {
+    const card = this.page.locator(`a.group.flex:has-text("${productName}")`);
+    await card.locator("button.w-full.font-semibold").click();
   }
 }
 

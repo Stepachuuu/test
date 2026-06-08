@@ -17,7 +17,7 @@ test.describe("Cart page", () => {
 
   test("CART-001 | View cart with items", async ({ page }) => {
     await home.navigate();
-    await home.addFirstProductToCart();
+    await home.addProductToCart(1);
 
     const toast = page.locator("[data-sonner-toast]").first();
     await expect(toast).toBeVisible();
@@ -36,7 +36,7 @@ test.describe("Cart page", () => {
 
   test("CART-002 | Remove item from cart", async ({ page }) => {
     await home.navigate();
-    await home.addFirstProductToCart();
+    await home.addProductToCart(1);
     await expect(page.locator("[data-sonner-toast]").first()).toContainText(
       "Товар добавлен в корзину",
     );
@@ -46,7 +46,7 @@ test.describe("Cart page", () => {
     await expect(firstItem).toBeVisible();
     const itemName = await firstItem.locator("h4.font-semibold").textContent();
 
-    await cart.removeFirstItem();
+    await cart.removeItem(0);
     await expect(page.locator("[data-sonner-toast]").first()).toContainText(
       "Товар удален из корзины",
     );
@@ -65,7 +65,7 @@ test.describe("Cart page", () => {
     page,
   }) => {
     await home.navigate();
-    await home.addFirstProductToCart();
+    await home.addProductToCart(1);
 
     const addToast = page.locator("[data-sonner-toast]").first();
     await expect(addToast).toBeVisible();

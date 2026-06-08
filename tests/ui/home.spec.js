@@ -37,7 +37,7 @@ test.describe("Home page", () => {
 
   // HOME-003 — добавление товара в корзину с главной страницы
   test("HOME-003 | Add product to cart from home page", async ({ page }) => {
-    await home.addFirstProductToCart();
+    await home.addProductToCart(1);
 
     const toast = page.locator("[data-sonner-toast]").first();
     await expect(toast).toBeVisible();
