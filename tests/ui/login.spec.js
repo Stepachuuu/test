@@ -1,6 +1,7 @@
 const { test, expect } = require("@playwright/test");
 const { LoginPage } = require("../../pages/LoginPage");
 const { HomePage } = require("../../pages/HomePage");
+const { RegisterPage } = require("../../pages/RegisterPage");
 
 const BASE_URL = process.env.BASE_URL;
 
@@ -22,11 +23,7 @@ test.describe("Login", () => {
 
     const homePage = new HomePage(page);
     await expect(homePage.ordersNavLink()).toBeVisible();
-    await expect(
-      page.locator(
-        "div.flex.flex-col.items-start.text-left span.text-sm.font-medium.leading-none",
-      ),
-    ).toContainText("user");
+    await expect(homePage.userName()).toContainText("user");
   });
 
   // LGN-002 — вход администратора
@@ -45,9 +42,10 @@ test.describe("Login", () => {
     await loginPage.login(process.env.USER_EMAIL, "wrong");
 
     await expect(page).toHaveURL(/\/login/);
-    const toast = page.locator("[data-sonner-toast]").first();
-    await expect(toast).toBeVisible();
-    await expect(toast).toContainText("Неверный email или пароль");
+    await expect(loginPage.toastMessage()).toBeVisible();
+    await expect(loginPage.toastMessage()).toContainText(
+      "Неверный email или пароль",
+    );
   });
 
   // LGN-004 — несуществующий email
@@ -55,9 +53,10 @@ test.describe("Login", () => {
     await loginPage.login("noexist@test.com", "12345678");
 
     await expect(page).toHaveURL(/\/login/);
-    const toast = page.locator("[data-sonner-toast]").first();
-    await expect(toast).toBeVisible();
-    await expect(toast).toContainText("Неверный email или пароль");
+    await expect(loginPage.toastMessage()).toBeVisible();
+    await expect(loginPage.toastMessage()).toContainText(
+      "Неверный email или пароль",
+    );
   });
 
   // LGN-005 — пустые поля
@@ -75,7 +74,7 @@ test.describe("Login", () => {
 
   // LGN-006 — только email, пароль пустой
   test("LGN-006 | Login with only email, password empty", async ({ page }) => {
-    await loginPage.fillEmail(process.env.USER_EMAIL || "user1@test.com");
+    await loginPage.fillEmail(process.env.USER_EMAIL);
     await loginPage.loginButton().click();
 
     await expect(
@@ -85,7 +84,7 @@ test.describe("Login", () => {
 
   // LGN-007 — только пароль, email пустой
   test("LGN-007 | Login with only password, email empty", async ({ page }) => {
-    await loginPage.fillPassword(process.env.USER_PASSWORD || "user123");
+    await loginPage.fillPassword(process.env.USER_PASSWORD);
     await loginPage.loginButton().click();
 
     await expect(
@@ -97,20 +96,19 @@ test.describe("Login", () => {
   test("LGN-008 | Redirect to register page via link", async ({ page }) => {
     await loginPage.registerLink().click();
 
+    const reg = new RegisterPage(page);
     await expect(page).toHaveURL(/\/register/);
-    await expect(page.locator('form button[type="submit"]')).toBeVisible();
+    await expect(reg.registerButton()).toBeVisible();
   });
 
   // LGN-009 — пароль с неверным регистром
   test("LGN-009 | Login with wrong case password", async ({ page }) => {
-    await loginPage.login(
-      process.env.USER_EMAIL || "user1@test.com",
-      "USER123",
-    );
+    await loginPage.login(process.env.USER_EMAIL, "USER123");
 
     await expect(page).toHaveURL(/\/login/);
-    const toast = page.locator("[data-sonner-toast]").first();
-    await expect(toast).toBeVisible();
-    await expect(toast).toContainText("Неверный email или пароль");
+    await expect(loginPage.toastMessage()).toBeVisible();
+    await expect(loginPage.toastMessage()).toContainText(
+      "Неверный email или пароль",
+    );
   });
 });

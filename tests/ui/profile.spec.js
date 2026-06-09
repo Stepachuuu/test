@@ -20,8 +20,9 @@ test.describe("Profile page", () => {
     await profile.updatePhone("+79991234568");
     await profile.saveButton().click();
 
-    const toast = await profile.waitForToast();
-    await expect(toast).toContainText("Профиль успешно обновлен");
+    await expect(profile.toastLocator()).toContainText(
+      "Профиль успешно обновлен",
+    );
 
     await page.reload();
     await expect(profile.emailInput()).not.toHaveValue("");
@@ -31,8 +32,9 @@ test.describe("Profile page", () => {
   test("PFL-002 | Update only phone number field", async ({ page }) => {
     await profile.updatePhone("+79991234567");
 
-    const toast = await profile.waitForToast();
-    await expect(toast).toContainText("Профиль успешно обновлен");
+    await expect(profile.toastLocator()).toContainText(
+      "Профиль успешно обновлен",
+    );
     // Остальные поля не очистились
     await expect(profile.emailInput()).not.toHaveValue("");
   });
@@ -41,17 +43,15 @@ test.describe("Profile page", () => {
   test("PFL-003 | Attempt to use existing email", async ({ page }) => {
     await profile.updateEmail("user2@test.com");
 
-    const toast = await profile.waitForToast();
-    await expect(toast).toContainText("already exists");
+    await expect(profile.toastLocator()).toContainText("already exists");
   });
 
   // PFL-004 — занятый username
   test("PFL-004 | Attempt to use existing username", async ({ page }) => {
     await profile.updateUsername("user2");
-    await profile.updatePhone("+37529292929");
+    await profile.updatePhone("+79991234564");
 
-    const toast = await profile.waitForToast();
-    await expect(toast).toContainText("already exists");
+    await expect(profile.toastLocator()).toContainText("already exists");
   });
 
   // PFL-005 — очистка обязательного поля email

@@ -19,44 +19,34 @@ test.describe("Orders page", () => {
     const home = new HomePage(page);
     await home.navigate();
     await home.addProductToCart(1);
-    await expect(page.locator("[data-sonner-toast]").first()).toContainText(
-      "Товар добавлен в корзину",
-    );
+    await expect(home.toastLocator()).toContainText("Товар добавлен в корзину");
 
     const cart = new CartPage(page);
     await cart.navigate();
     await cart.checkout();
     await expect(page).toHaveURL(`${BASE_URL}/`);
-    await expect(page.locator("[data-sonner-toast]").first()).toContainText(
-      "Заказ успешно создан",
-    );
+    await expect(cart.toastLocator()).toContainText("Заказ успешно создан");
 
     await orders.navigate();
 
-    const trigger = page.locator('h3 button:has-text("Заказ #")').first();
+    const trigger = orders.orderDetail().first();
     await expect(trigger).toBeVisible({ timeout: 10000 });
 
     // Раскрываем заказ
     await trigger.click();
     await expect(trigger).toHaveAttribute("data-state", "open");
 
-    // Проверяем заголовок "Состав заказа:"
-    const compositionHeader = page.locator(
-      '[data-state="open"] h5.font-semibold.mb-2',
-    );
-    await expect(compositionHeader).toHaveText("Состав заказа:", {
+    await expect(orders.orderComposition()).toHaveText("Состав заказа:", {
       timeout: 5000,
     });
 
-    const firstItem = page
-      .locator('[data-state="open"] .flex.justify-between.items-center.py-2')
-      .first();
-    await expect(firstItem.locator("img")).toBeVisible();
-    await expect(firstItem.locator("h5.font-medium")).toBeVisible();
+    await expect(orders.expandedOrderItems().first()).toBeVisible();
+    await expect(orders.expandedOrderItemImage().first()).toBeVisible();
+    await expect(orders.expandedOrderItemName().first()).toBeVisible();
 
     // Сворачиваем заказ
     await trigger.click();
-    await expect(compositionHeader).not.toBeVisible();
+    await expect(orders.orderComposition()).not.toBeVisible();
   });
 
   // ORD-002 — Display of order statuses as plain text
@@ -67,17 +57,13 @@ test.describe("Orders page", () => {
     const home = new HomePage(page);
     await home.navigate();
     await home.addProductToCart(1);
-    await expect(page.locator("[data-sonner-toast]").first()).toContainText(
-      "Товар добавлен в корзину",
-    );
+    await expect(home.toastLocator()).toContainText("Товар добавлен в корзину");
 
     const cart = new CartPage(page);
     await cart.navigate();
     await cart.checkout();
     await expect(page).toHaveURL(`${BASE_URL}/`);
-    await expect(page.locator("[data-sonner-toast]").first()).toContainText(
-      "Заказ успешно создан",
-    );
+    await expect(cart.toastLocator()).toContainText("Заказ успешно создан");
 
     await orders.navigate();
 

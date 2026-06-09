@@ -32,6 +32,9 @@ class RegisterPage extends BasePage {
   formErrors() {
     return this.page.locator("p.text-destructive");
   }
+  toastLocator() {
+    return this.page.locator("[data-sonner-toast]").first();
+  }
 
   async navigate() {
     await this.goto("/register");

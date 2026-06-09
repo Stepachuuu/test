@@ -1,6 +1,7 @@
 const { test, expect } = require("@playwright/test");
 const { HomePage } = require("../../pages/HomePage");
 const { CartPage } = require("../../pages/CartPage");
+const { ProductDetailPage } = require("../../pages/ProductDetailPage");
 const { loginAs } = require("../../helpers/auth");
 
 test.describe("Home page", () => {
@@ -31,17 +32,17 @@ test.describe("Home page", () => {
   test("HOME-002 | Navigate to product detail page", async ({ page }) => {
     await home.productCards().first().click();
 
+    const detail = new ProductDetailPage(page);
     await expect(page).toHaveURL(/\/product\/\d+/);
-    await expect(page.locator("button.h-10.rounded-md.px-8")).toBeVisible();
+    await expect(detail.addToCartButton()).toBeVisible();
   });
 
   // HOME-003 — добавление товара в корзину с главной страницы
   test("HOME-003 | Add product to cart from home page", async ({ page }) => {
     await home.addProductToCart(1);
 
-    const toast = page.locator("[data-sonner-toast]").first();
-    await expect(toast).toBeVisible();
-    await expect(toast).toContainText("Товар добавлен в корзину");
+    await expect(home.toastLocator()).toBeVisible();
+    await expect(home.toastLocator()).toContainText("Товар добавлен в корзину");
 
     const cart = new CartPage(page);
     await cart.navigate();

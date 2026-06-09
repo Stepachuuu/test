@@ -24,7 +24,7 @@ class ProductDetailPage extends BasePage {
     return this.page.locator("button.h-10.rounded-md.px-8");
   }
   errorBlock() {
-    return this.page.locator("div.text-destructive");
+    return this.page.locator("div.container.p-4");
   }
 
   async navigateToProduct(productId) {

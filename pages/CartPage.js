@@ -13,6 +13,12 @@ class CartPage extends BasePage {
       "div.flex.items-center.justify-between.p-4.border-b",
     );
   }
+  cartItemsImage() {
+    return this.page.locator("img.h-16.w-16.rounded-md");
+  }
+  cartItemsText() {
+    return this.page.locator("h4.font-semibold");
+  }
   removeButtons() {
     return this.page.locator("button.h-8.rounded-md.bg-destructive");
   }
@@ -26,6 +32,9 @@ class CartPage extends BasePage {
     return this.page
       .locator("div.flex.justify-between.text-lg.font-bold span")
       .last();
+  }
+  toastLocator() {
+    return this.page.locator("[data-sonner-toast]").first();
   }
 
   async navigate() {

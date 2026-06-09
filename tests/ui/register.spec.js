@@ -23,8 +23,9 @@ test.describe("Register", () => {
       password: "password123",
     });
 
-    const toast = await reg.waitForToast();
-    await expect(toast).toContainText("Регистрация прошла успешно!");
+    await expect(reg.toastLocator()).toContainText(
+      "Регистрация прошла успешно!",
+    );
     await expect(page).toHaveURL(/\/login/);
   });
 
@@ -39,8 +40,7 @@ test.describe("Register", () => {
       password: "password123",
     });
 
-    const toast = await reg.waitForToast();
-    await expect(toast).toContainText("already exists");
+    await expect(reg.toastLocator()).toContainText("already exists");
     await expect(page).toHaveURL(/\/register/);
   });
 
@@ -55,8 +55,7 @@ test.describe("Register", () => {
       password: "password123",
     });
 
-    const toast = await reg.waitForToast();
-    await expect(toast).toContainText("already exists");
+    await expect(reg.toastLocator()).toContainText("already exists");
     await expect(page).toHaveURL(/\/register/);
   });
 
@@ -130,8 +129,7 @@ test.describe("Register", () => {
       password: "password123",
     });
 
-    const toast = await reg.waitForToast();
-    await expect(toast).toContainText("email must be an email");
+    await expect(reg.toastLocator()).toContainText("email must be an email");
   });
 
   // REG-008 — переход на страницу входа по ссылке
@@ -151,8 +149,7 @@ test.describe("Register", () => {
       password: "password123",
     });
 
-    const toast = await reg.waitForToast();
-    await expect(toast).toContainText(
+    await expect(reg.toastLocator()).toContainText(
       "phoneNumber must be in international format",
     );
   });

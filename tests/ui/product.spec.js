@@ -43,7 +43,7 @@ test.describe("Product detail page", () => {
   test("PROD-003 | Open non-existent product shows error", async ({ page }) => {
     await pd.navigateToProduct(99999);
     const errBlock = pd.errorBlock();
-    await expect(errBlock.or(page.locator("div.container.p-4"))).toBeVisible();
+    await expect(errBlock).toBeVisible();
   });
 
   // PROD-004 — формат цены

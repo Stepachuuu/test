@@ -2,16 +2,19 @@ const { test, expect } = require("@playwright/test");
 const { CartPage } = require("../../pages/CartPage");
 const { HomePage } = require("../../pages/HomePage");
 const { loginAs } = require("../../helpers/auth");
+const { OrdersPage } = require("../../pages/OrdersPage");
 
 const BASE_URL = process.env.BASE_URL;
 
 test.describe("Cart page", () => {
   let cart;
   let home;
+  let order;
 
   test.beforeEach(async ({ page }) => {
     cart = new CartPage(page);
     home = new HomePage(page);
+    order = new OrdersPage(page);
     await loginAs(page, "user");
   });
 
@@ -19,9 +22,8 @@ test.describe("Cart page", () => {
     await home.navigate();
     await home.addProductToCart(1);
 
-    const toast = page.locator("[data-sonner-toast]").first();
-    await expect(toast).toBeVisible();
-    await expect(toast).toContainText("Товар добавлен в корзину");
+    await expect(cart.toastLocator()).toBeVisible();
+    await expect(cart.toastLocator()).toContainText("Товар добавлен в корзину");
 
     await cart.navigate();
 
@@ -29,30 +31,23 @@ test.describe("Cart page", () => {
     await expect(cart.cartItems().first()).toBeVisible();
     await expect(cart.checkoutButton()).toBeEnabled();
 
-    const first = cart.cartItems().first();
-    await expect(first.locator("img.h-16.w-16.rounded-md")).toBeVisible();
-    await expect(first.locator("h4.font-semibold")).toBeVisible();
+    await expect(cart.cartItemsImage()).toBeVisible();
+    await expect(cart.cartItemsText()).toBeVisible();
   });
 
   test("CART-002 | Remove item from cart", async ({ page }) => {
     await home.navigate();
     await home.addProductToCart(1);
-    await expect(page.locator("[data-sonner-toast]").first()).toContainText(
-      "Товар добавлен в корзину",
-    );
+    await expect(home.toastLocator()).toContainText("Товар добавлен в корзину");
 
     await cart.navigate();
-    const firstItem = cart.cartItems().first();
-    await expect(firstItem).toBeVisible();
-    const itemName = await firstItem.locator("h4.font-semibold").textContent();
+    const itemName = await cart.cartItemsText().first().textContent();
 
     await cart.removeItem(0);
-    await expect(page.locator("[data-sonner-toast]").first()).toContainText(
-      "Товар удален из корзины",
-    );
+    await expect(cart.toastLocator()).toContainText("Товар удален из корзины");
 
     await expect(
-      page.locator(`h4.font-semibold:has-text("${itemName}")`),
+      cart.cartItemsText().filter({ hasText: itemName }),
     ).toHaveCount(0);
 
     if ((await cart.cartItems().count()) === 0) {
@@ -67,24 +62,20 @@ test.describe("Cart page", () => {
     await home.navigate();
     await home.addProductToCart(1);
 
-    const addToast = page.locator("[data-sonner-toast]").first();
-    await expect(addToast).toBeVisible();
-    await expect(addToast).toContainText("Товар добавлен в корзину");
+    await expect(home.toastLocator()).toBeVisible();
+    await expect(home.toastLocator()).toContainText("Товар добавлен в корзину");
 
     await cart.navigate();
     await cart.checkout();
 
-    const orderToast = page.locator("[data-sonner-toast]").first();
-    await expect(orderToast).toBeVisible();
-    await expect(orderToast).toContainText("Заказ успешно создан");
+    await expect(cart.toastLocator()).toBeVisible();
+    await expect(cart.toastLocator()).toContainText("Заказ успешно создан");
     await expect(page).toHaveURL(`${BASE_URL}/`);
 
     await cart.navigate();
     await expect(cart.emptyCartMessage()).toBeVisible();
 
     await page.goto(`${BASE_URL}/orders`);
-    await expect(
-      page.locator("h4.font-semibold.text-lg").first(),
-    ).toBeVisible();
+    await expect(order.orderHeadings().first()).toBeVisible();
   });
 });

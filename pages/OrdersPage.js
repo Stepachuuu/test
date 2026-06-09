@@ -23,6 +23,26 @@ class OrdersPage extends BasePage {
   orderComposition() {
     return this.page.locator("h5.font-semibold.mb-2");
   }
+  orderDetail() {
+    return this.page.locator('h3 button:has-text("Заказ #")');
+  }
+  expandedOrderItems() {
+    return this.page.locator(
+      '[data-state="open"] .flex.justify-between.items-center.py-2',
+    );
+  }
+
+  expandedOrderItemImage() {
+    return this.expandedOrderItems().locator("img");
+  }
+
+  expandedOrderItemName() {
+    return this.expandedOrderItems().locator("h5.font-medium");
+  }
+
+  expandedOrderCompositionHeader() {
+    return this.page.locator('[data-state="open"] h5.font-semibold.mb-2');
+  }
 
   async navigate() {
     await this.goto("/orders");
@@ -37,6 +57,15 @@ class OrdersPage extends BasePage {
       `h3 button:has-text("Заказ #${orderId}")`,
     );
     await trigger.click();
+  }
+  async expectOrderContainsItems(expectedCount = 1) {
+    await expect(this.expandedOrderCompositionHeader()).toHaveText(
+      "Состав заказа:",
+    );
+    await expect(this.expandedOrderItems().first()).toBeVisible();
+    await expect(this.expandedOrderItemImage().first()).toBeVisible();
+    await expect(this.expandedOrderItemName().first()).toBeVisible();
+    expect(await this.expandedOrderItems().count()).toBe(expectedCount);
   }
 }
 

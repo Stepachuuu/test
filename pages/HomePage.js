@@ -29,6 +29,14 @@ class HomePage extends BasePage {
   cartNavLink() {
     return this.page.locator('a[href="/cart"]');
   }
+  userName() {
+    return this.page.locator(
+      "div.flex.flex-col.items-start.text-left span.text-sm.font-medium.leading-none",
+    );
+  }
+  toastLocator() {
+    return this.page.locator("[data-sonner-toast]").first();
+  }
 
   async navigate() {
     await this.goto("/");
