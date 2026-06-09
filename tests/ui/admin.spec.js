@@ -1,6 +1,7 @@
 const { test, expect } = require("@playwright/test");
 const { AdminPage } = require("../../pages/AdminPage");
 const { loginAs } = require("../../helpers/auth");
+const { BasePage } = require("../../pages/BasePage");
 
 const BASE_URL = process.env.BASE_URL;
 
@@ -36,7 +37,7 @@ test.describe("Admin panel", () => {
     await loginAs(page, "user");
     await admin.navigate();
     await expect(page).toHaveURL(`${BASE_URL}/`);
-    await expect(page.locator('a[href="/admin"]')).not.toBeVisible();
+    await expect(admin.isAdminPanelVisible()).not.toBeVisible();
   });
 
   test.describe("Admin authenticated", () => {
@@ -69,7 +70,6 @@ test.describe("Admin panel", () => {
       await expect(admin.createProductButton()).toBeVisible();
       await expect(admin.tableRows().first()).toBeVisible();
 
-      await expect(page.locator("th").filter({ hasText: "ID" })).toBeVisible();
       await expect(admin.tableHeaderId()).toBeVisible();
       await expect(admin.tableHeaderName()).toBeVisible();
       await expect(admin.tableHeaderPrice()).toBeVisible();
@@ -87,9 +87,8 @@ test.describe("Admin panel", () => {
       await admin.fillProductForm(TEST_PRODUCT);
       await admin.saveModalButton().click();
 
-      const toast = page.locator("[data-sonner-toast]").first();
-      await expect(toast).toBeVisible();
-      await expect(toast).toContainText("Товар успешно создан");
+      await expect(admin.toastLocator()).toBeVisible();
+      await expect(admin.toastLocator()).toContainText("Товар успешно создан");
       await expect(admin.modal()).not.toBeVisible();
     });
 
@@ -106,9 +105,10 @@ test.describe("Admin panel", () => {
       await admin.productPriceInput().fill(EDITED_PRODUCT.price);
       await admin.saveModalButton().click();
 
-      const toast = page.locator("[data-sonner-toast]").first();
-      await expect(toast).toBeVisible();
-      await expect(toast).toContainText("Товар успешно обновлен");
+      await expect(admin.toastLocator()).toBeVisible();
+      await expect(admin.toastLocator()).toContainText(
+        "Товар успешно обновлен",
+      );
     });
 
     // ADM-PROD-004 — удаление товара
@@ -120,15 +120,14 @@ test.describe("Admin panel", () => {
       await admin.fillProductForm(DELETED_PRODUCT);
       await admin.saveModalButton().click();
 
-      await expect(page.locator("[data-sonner-toast]").first()).toBeVisible();
+      await expect(admin.toastLocator()).toBeVisible();
 
-      const row = page.locator("tr").filter({ hasText: DELETED_PRODUCT.name });
+      const row = admin.tableRows().filter({ hasText: DELETED_PRODUCT.name });
       await expect(row).toBeVisible({ timeout: 5000 });
-      await row.locator("button.h-8.rounded-md.bg-destructive").click();
+      await row.locator(admin.deleteButtons()).click();
 
-      const toast = page.locator("[data-sonner-toast]").first();
-      await expect(toast).toBeVisible();
-      await expect(toast).toContainText("Товар удален");
+      await expect(admin.toastLocator()).toBeVisible();
+      await expect(admin.toastLocator()).toContainText("Товар удален");
       await expect(row).not.toBeVisible();
     });
 
@@ -146,23 +145,24 @@ test.describe("Admin panel", () => {
       // Модалка не закрылась
       await expect(admin.modal()).toBeVisible();
 
-      // Появился toast с ошибкой
-      const toast = page.locator("[data-sonner-toast]").first();
-      await expect(toast).toBeVisible();
-      await expect(toast).toContainText("Не удалось создать товар");
+      await expect(admin.toastLocator()).toBeVisible();
+      await expect(admin.toastLocator()).toContainText(
+        "Не удалось создать товар",
+      );
     });
 
     // ADM-WH-001 — список складов
     test("ADM-WH-001 | View warehouses list", async ({ page }) => {
       await admin.navigateToWarehouses();
 
-      await expect(admin.createWarehouseButton()).toBeVisible();
-      await expect(page.locator("th").filter({ hasText: "ID" })).toBeVisible();
       await expect(
-        page.locator("th").filter({ hasText: "Название" }),
+        admin.tableHeaderId().filter({ hasText: "ID" }),
       ).toBeVisible();
       await expect(
-        page.locator("th").filter({ hasText: "Адрес" }),
+        admin.tableHeaderName().filter({ hasText: "Название" }),
+      ).toBeVisible();
+      await expect(
+        admin.tableHeaderAddress().filter({ hasText: "Адрес" }),
       ).toBeVisible();
     });
 
@@ -178,9 +178,8 @@ test.describe("Admin panel", () => {
       });
       await admin.saveModalButton().click();
 
-      const toast = page.locator("[data-sonner-toast]").first();
-      await expect(toast).toBeVisible();
-      await expect(toast).toContainText("Склад создан");
+      await expect(admin.toastLocator()).toBeVisible();
+      await expect(admin.toastLocator()).toContainText("Склад создан");
     });
 
     // ADM-WH-003 — редактирование склада
@@ -194,7 +193,7 @@ test.describe("Admin panel", () => {
           address: "Test Address",
         });
         await admin.saveModalButton().click();
-        await expect(page.locator("[data-sonner-toast]").first()).toBeVisible();
+        await expect(admin.toastLocator()).first().toBeVisible();
         await admin.navigateToWarehouses();
       }
 
@@ -206,25 +205,18 @@ test.describe("Admin panel", () => {
       await admin.warehouseAddressInput().fill(newAddress);
       await admin.saveModalButton().click();
 
-      const toast = page.locator("[data-sonner-toast]").first();
-      await expect(toast).toBeVisible();
-      await expect(toast).toContainText("Склад обновлен");
+      await expect(admin.toastLocator()).toBeVisible();
+      await expect(admin.toastLocator()).toContainText("Склад обновлен");
     });
 
     // ADM-ORDERS-001 — список всех заказов
     test("ADM-ORDERS-001 | View all orders in admin", async ({ page }) => {
       await admin.navigateToOrders();
 
-      await expect(page.locator("th").filter({ hasText: "ID" })).toBeVisible();
-      await expect(
-        page.locator("th").filter({ hasText: "Дата" }),
-      ).toBeVisible();
-      await expect(
-        page.locator("th").filter({ hasText: "Покупатель" }),
-      ).toBeVisible();
-      await expect(
-        page.locator("th").filter({ hasText: "Статус" }),
-      ).toBeVisible();
+      await expect(admin.tableHeaderId()).toBeVisible();
+      await expect(admin.tableHeaderDate()).toBeVisible();
+      await expect(admin.tableHeaderBuyer()).toBeVisible();
+      await expect(admin.tableHeaderStatus()).toBeVisible();
     });
 
     // ADM-ORDERS-002 — изменение статуса заказа

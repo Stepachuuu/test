@@ -5,6 +5,9 @@ class AdminPage extends BasePage {
     super(page);
   }
 
+  isAdminPanelVisible() {
+    return this.page.locator('a[href="/admin"]');
+  }
   sidebarOverviewLink() {
     return this.page
       .locator("nav a.flex.items-center.gap-3.rounded-lg")
@@ -30,6 +33,18 @@ class AdminPage extends BasePage {
   }
   tableHeaderCategory() {
     return this.page.locator("th").filter({ hasText: "Категория" });
+  }
+  tableHeaderAddress() {
+    return this.page.locator("th").filter({ hasText: "Адрес" });
+  }
+  tableHeaderDate() {
+    return this.page.locator("th").filter({ hasText: "Дата" });
+  }
+  tableHeaderBuyer() {
+    return this.page.locator("th").filter({ hasText: "Покупатель" });
+  }
+  tableHeaderStatus() {
+    return this.page.locator("th").filter({ hasText: "Статус" });
   }
   logoutButton() {
     return this.page.locator("button.w-full.justify-start.gap-3");
@@ -91,6 +106,10 @@ class AdminPage extends BasePage {
 
   statusSelects() {
     return this.page.locator('button[role="combobox"].w-\\[160px\\]');
+  }
+
+  toastLocator() {
+    return this.page.locator("[data-sonner-toast]").first();
   }
 
   async navigate() {
