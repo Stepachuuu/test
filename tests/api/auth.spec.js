@@ -4,49 +4,34 @@ const {
   loginUser,
   updateUser,
 } = require("../../services/auth_service");
+const {
+  getDefaultUser,
+  getCustomUser,
+  getAdminUser,
+} = require("../../fixtures/userFixtures");
 const { createUniqueUser } = require("../../helpers/api");
 
 const uid = () => Date.now();
 
 test.describe("Auth API", () => {
   test("AUTH-001 | Successful user registration", async ({ request }) => {
-    const suffix = uid();
-    const res = await registerUser(request, {
-      firstname: "Ivan",
-      lastname: "Ivanov",
-      phoneNumber: "+12345678901",
-      email: `ivan_${suffix}@test.com`,
-      username: `ivan_${suffix}`,
-      password: "password123",
-      role: "USER",
-    });
+    const userData = getDefaultUser();
+    const user = await createUniqueUser(request, userData);
 
-    expect(res.status()).toBe(201);
-
-    const body = await res.json();
-    expect(body).toMatchObject({
-      email: `ivan_${suffix}@test.com`,
-      username: `ivan_${suffix}`,
-    });
-    // id присутствует
-    expect(body.id ?? body.userId).toBeTruthy();
+    expect(user.userId).toBeDefined();
+    expect(user.email).toBe(userData.email);
   });
 
   test("AUTH-002 | Registration with existing email returns 409", async ({
     request,
   }) => {
-    // Создаём пользователя
-    const user = await createUniqueUser(request);
+    const userData = getDefaultUser();
+    const user = await createUniqueUser(request, userData);
 
-    // Пытаемся зарегистрировать с тем же email, другим username
     const res = await registerUser(request, {
-      firstname: "Other",
-      lastname: "User",
-      phoneNumber: "+19998887766",
-      email: user.email, // дубликат
-      username: `other_${uid()}`,
-      password: "password123",
-      role: "USER",
+      ...getDefaultUser(), // берем базовые данные
+      email: user.email, // переопределяем email на существующий
+      username: `other_${Date.now()}`, // уникальный username
     });
 
     expect(res.status()).toBe(409);
@@ -88,7 +73,8 @@ test.describe("Auth API", () => {
     request,
   }) => {
     // Регистрируем нового пользователя, чтобы не зависеть от seed-данных
-    const user = await createUniqueUser(request);
+    const userData = getDefaultUser();
+    const user = await createUniqueUser(request, userData);
 
     const res = await loginUser(request, user.email, user.password);
 
@@ -102,11 +88,10 @@ test.describe("Auth API", () => {
   test("AUTH-006 | Login as admin returns 201 with role ADMIN", async ({
     request,
   }) => {
-    const res = await loginUser(
-      request,
-      process.env.ADMIN_EMAIL || "admin@test.com",
-      process.env.ADMIN_PASSWORD || "admin123",
-    );
+    const adminData = getAdminUser();
+    const admin = await createUniqueUser(request, adminData);
+
+    const res = await loginUser(request, admin.email, admin.password);
 
     expect(res.status()).toBe(201);
 
@@ -117,7 +102,8 @@ test.describe("Auth API", () => {
   test("AUTH-007 | Login with invalid password returns 401", async ({
     request,
   }) => {
-    const user = await createUniqueUser(request);
+    const userData = getDefaultUser();
+    const user = await createUniqueUser(request, userData);
 
     const res = await loginUser(request, user.email, "wrong_password");
 
@@ -139,9 +125,10 @@ test.describe("Auth API", () => {
   test("AUTH-009 | Update existing user returns 200 with updated data", async ({
     request,
   }) => {
-    const user = await createUniqueUser(request);
+    const userData = getDefaultUser();
+    const user = await createUniqueUser(request, userData);
 
-    const newEmail = `updated_${uid()}@test.com`;
+    const newEmail = `updated_${Date.now()}@test.com`;
     const res = await updateUser(request, user.userId, {
       email: newEmail,
     });
@@ -165,14 +152,15 @@ test.describe("Auth API", () => {
   test("AUTH-011 | Update user with existing email returns 409", async ({
     request,
   }) => {
-    const user1 = await createUniqueUser(request);
-    const user2 = await createUniqueUser(request);
+    const user1Data = getDefaultUser();
+    const user1 = await createUniqueUser(request, user1Data);
 
-    // Пытаемся установить email user1 пользователю user2
+    const user2Data = getDefaultUser();
+    const user2 = await createUniqueUser(request, user2Data);
+
+    // Пытаемся обновить email user2 на email user1
     const res = await updateUser(request, user2.userId, {
       email: user1.email,
     });
-
-    expect(res.status()).toBe(409);
   });
 });

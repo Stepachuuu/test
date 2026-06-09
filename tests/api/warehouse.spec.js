@@ -7,31 +7,31 @@ const {
   updateWarehouse,
   updateInventory,
 } = require("../../services/warehouse_service");
+const { getDefaultWarehouse } = require("../../fixtures/warehouseFixtures");
+const { getDefaultProduct } = require("../../fixtures/productFixtures");
 
 test.describe("Warehouse API", () => {
   test("WH-001 | Create warehouse with valid data returns 201", async ({
     request,
   }) => {
-    const payload = {
-      title: `Main WH ${Date.now()}`,
-      address: "Via Roma 25, Milano, MI 20121",
-    };
+    const warehouseData = getDefaultWarehouse();
 
-    const res = await createWarehouse(request, payload);
+    const res = await createWarehouse(request, warehouseData);
 
     expect(res.status()).toBe(201);
 
     const body = await res.json();
-    expect(body.title).toBe(payload.title);
+    expect(body.title).toBe(warehouseData.title);
     expect(body.id ?? body.warehouseId).toBeTruthy();
   });
 
   test("WH-002 | Create warehouse without required field (address) returns 400", async ({
     request,
   }) => {
+    const warehouseData = getDefaultWarehouse();
+
     const res = await createWarehouse(request, {
-      title: `NoAddr WH ${Date.now()}`,
-      // address намеренно пропущен
+      title: warehouseData.title,
     });
 
     expect(res.status()).toBe(400);
@@ -40,7 +40,11 @@ test.describe("Warehouse API", () => {
   test("WH-003 | Get warehouse by valid ID returns 200 with warehouse data", async ({
     request,
   }) => {
-    const { warehouseId, title } = await createTestWarehouse(request);
+    const warehouseData = getDefaultWarehouse();
+    const { warehouseId, title } = await createTestWarehouse(
+      request,
+      warehouseData,
+    );
 
     const res = await getWarehouseById(request, warehouseId);
 
@@ -62,7 +66,8 @@ test.describe("Warehouse API", () => {
   test("WH-005 | Update warehouse with valid data returns 200", async ({
     request,
   }) => {
-    const { warehouseId } = await createTestWarehouse(request);
+    const warehouseData = getDefaultWarehouse();
+    const { warehouseId } = await createTestWarehouse(request, warehouseData);
     const newTitle = `Updated WH ${Date.now()}`;
 
     const res = await updateWarehouse(request, warehouseId, {
@@ -89,8 +94,11 @@ test.describe("Warehouse API", () => {
   test("WH-007 | Update inventory with valid data returns 201", async ({
     request,
   }) => {
-    const { warehouseId } = await createTestWarehouse(request);
-    const { productId } = await createTestProduct(request);
+    const warehouseData = getDefaultWarehouse();
+    const productData = getDefaultProduct();
+
+    const { warehouseId } = await createTestWarehouse(request, warehouseData);
+    const { productId } = await createTestProduct(request, productData);
 
     const res = await updateInventory(request, {
       productId,
@@ -98,14 +106,14 @@ test.describe("Warehouse API", () => {
       quantity: 100,
     });
 
-    // Swagger: 201 Inventory successfully updated or created
     expect(res.status()).toBe(201);
   });
 
   test("WH-008 | Update inventory with invalid productId returns 404", async ({
     request,
   }) => {
-    const { warehouseId } = await createTestWarehouse(request);
+    const warehouseData = getDefaultWarehouse();
+    const { warehouseId } = await createTestWarehouse(request, warehouseData);
 
     const res = await updateInventory(request, {
       productId: 999999,
@@ -119,7 +127,8 @@ test.describe("Warehouse API", () => {
   test("WH-009 | Update inventory with invalid warehouseId returns 404", async ({
     request,
   }) => {
-    const { productId } = await createTestProduct(request);
+    const productData = getDefaultProduct();
+    const { productId } = await createTestProduct(request, productData);
 
     const res = await updateInventory(request, {
       productId,

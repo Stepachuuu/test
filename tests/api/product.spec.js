@@ -1,61 +1,67 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require("@playwright/test");
 const {
   createProduct,
   getAllProducts,
   getProductById,
   updateProduct,
-  deleteProduct
-} = require('../../services/product_service');
-const { createTestProduct } = require ('../../helpers/api');
+  deleteProduct,
+} = require("../../services/product_service");
+const { createTestProduct } = require("../../helpers/api");
+const {
+  getDefaultProduct,
+  getCustomProduct,
+} = require("../../fixtures/productFixtures");
 
-test.describe('Product API', () => {
+test.describe("Product API", () => {
+  test("PROD-001 | Create product with valid data returns 201", async ({
+    request,
+  }) => {
+    const productData = getDefaultProduct();
 
-  test('PROD-001 | Create product with valid data returns 201', async ({ request }) => {
-    const payload = {
-      name:        `Keyboard ${Date.now()}`,
-      description: 'Mechanical keyboard with blue switches',
-      price:       49.99,
-      category:    'ELECTRONICS',
-      urlImage:    'https://example.com/keyboard.png',
-    };
-
-    const res = await createProduct(request, payload);
+    const res = await createProduct(request, productData);
 
     expect(res.status()).toBe(201);
 
     const body = await res.json();
-    expect(body.name).toBe(payload.name);
-    expect(Number(body.price)).toBe(payload.price);
+    expect(body.name).toBe(productData.name);
+    expect(Number(body.price)).toBe(productData.price);
     expect(body.id ?? body.productId).toBeTruthy();
   });
 
-  test('PROD-002 | Create product without name field returns 400', async ({ request }) => {
+  test("PROD-002 | Create product without name field returns 400", async ({
+    request,
+  }) => {
+    const productData = getDefaultProduct();
+
     const res = await createProduct(request, {
-      // name намеренно пропущен
-      description: 'No name product',
-      price:       9.99,
-      category:    'ELECTRONICS',
-      urlImage:    'https://example.com/img.png',
+      description: productData.description,
+      price: productData.price,
+      category: productData.category,
+      urlImage: productData.urlImage,
     });
 
     expect(res.status()).toBe(400);
   });
 
-  test('PROD-003 | Create product with negative price returns 400', async ({ request }) => {
+  test("PROD-003 | Create product with negative price returns 400", async ({
+    request,
+  }) => {
     const res = await createProduct(request, {
-      name:        `NegPrice ${Date.now()}`,
-      description: 'Negative price test',
-      price:       -1,
-      category:    'ELECTRONICS',
-      urlImage:    'https://example.com/img.png',
+      name: `NegPrice ${Date.now()}`,
+      description: "Negative price test",
+      price: -1,
+      category: "ELECTRONICS",
+      urlImage: "https://example.com/img.png",
     });
 
     expect(res.status()).toBe(400);
   });
 
-  test('PROD-004 | Get all products returns 200 with array', async ({ request }) => {
-    // Гарантируем наличие хотя бы одного товара
-    await createTestProduct(request);
+  test("PROD-004 | Get all products returns 200 with array", async ({
+    request,
+  }) => {
+    const productData = getDefaultProduct();
+    await createTestProduct(request, productData);
 
     const res = await getAllProducts(request);
 
@@ -66,8 +72,11 @@ test.describe('Product API', () => {
     expect(body.length).toBeGreaterThan(0);
   });
 
-  test('PROD-005 | Get product by valid ID returns 200 with product details', async ({ request }) => {
-    const { productId, name } = await createTestProduct(request);
+  test("PROD-005 | Get product by valid ID returns 200 with product details", async ({
+    request,
+  }) => {
+    const productData = getDefaultProduct();
+    const { productId, name } = await createTestProduct(request, productData);
 
     const res = await getProductById(request, productId);
 
@@ -78,18 +87,23 @@ test.describe('Product API', () => {
     expect(body.id ?? body.productId).toBe(productId);
   });
 
-  test('PROD-006 | Get product by invalid ID returns 404', async ({ request }) => {
+  test("PROD-006 | Get product by invalid ID returns 404", async ({
+    request,
+  }) => {
     const res = await getProductById(request, 999999);
 
     expect(res.status()).toBe(404);
   });
 
-  test('PROD-007 | Update product with valid data returns 200', async ({ request }) => {
-    const { productId } = await createTestProduct(request);
+  test("PROD-007 | Update product with valid data returns 200", async ({
+    request,
+  }) => {
+    const productData = getDefaultProduct();
+    const { productId } = await createTestProduct(request, productData);
     const newName = `Updated ${Date.now()}`;
 
     const res = await updateProduct(request, productId, {
-      name:  newName,
+      name: newName,
       price: 59.99,
     });
 
@@ -100,14 +114,19 @@ test.describe('Product API', () => {
     expect(Number(body.price)).toBe(59.99);
   });
 
-  test('PROD-008 | Update non-existing product returns 404', async ({ request }) => {
-    const res = await updateProduct(request, 999999, { name: 'Ghost' });
+  test("PROD-008 | Update non-existing product returns 404", async ({
+    request,
+  }) => {
+    const res = await updateProduct(request, 999999, { name: "Ghost" });
 
     expect(res.status()).toBe(404);
   });
 
-  test('PROD-009 | Delete product returns 200 and product no longer exists', async ({ request }) => {
-    const { productId } = await createTestProduct(request);
+  test("PROD-009 | Delete product returns 200 and product no longer exists", async ({
+    request,
+  }) => {
+    const productData = getDefaultProduct();
+    const { productId } = await createTestProduct(request, productData);
 
     const deleteRes = await deleteProduct(request, productId);
     expect(deleteRes.status()).toBe(200);
@@ -117,10 +136,11 @@ test.describe('Product API', () => {
     expect(getRes.status()).toBe(404);
   });
 
-  test('PROD-010 | Delete non-existing product returns 404', async ({ request }) => {
+  test("PROD-010 | Delete non-existing product returns 404", async ({
+    request,
+  }) => {
     const res = await deleteProduct(request, 999999);
 
     expect(res.status()).toBe(404);
   });
-
 });
