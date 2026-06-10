@@ -1,41 +1,50 @@
-import { expect } from "@playwright/test";
-import { locators } from "../helpers/locators.js";
+const { BasePage } = require("./BasePage");
 
-export class LoginPage {
+class LoginPage extends BasePage {
   constructor(page) {
-    this.page = page;
-    this.emailInput = page.locator(locators.loginEmailInput);
-    this.passwordInput = page.locator(locators.loginPasswordInput);
-    this.loginButton = page.locator(locators.loginButton);
-    this.errorMessage = page.locator(locators.loginErrorMessage);
-    this.emailError = page.getByText("Email обязателен");
-    this.passwordError = page.getByText("Пароль обязателен");
+    super(page);
   }
 
-  async goto() {
-    await this.page.goto("/login");
+  emailInput() {
+    return this.page.locator('input[name="email"]');
+  }
+  passwordInput() {
+    return this.page.locator('input[name="password"]');
+  }
+  loginButton() {
+    return this.page.locator('form button[type="submit"]');
+  }
+  registerLink() {
+    return this.page.locator('a[href="/register"]');
+  }
+  formErrors() {
+    return this.page.locator("p.text-destructive");
+  }
+  toastMessage() {
+    return this.page.locator("[data-sonner-toast]").first();
+  }
+
+  async navigate() {
+    await this.goto("/login");
   }
 
   async login(email, password) {
-    await this.emailInput.fill(email);
-    await this.passwordInput.fill(password);
-    await this.loginButton.click();
+    await this.emailInput().fill(email);
+    await this.passwordInput().fill(password);
+    await this.loginButton().click();
   }
 
-  async expectSuccess() {
-    await expect(this.page).toHaveURL("/");
+  async fillEmail(email) {
+    await this.emailInput().fill(email);
+  }
+  async fillPassword(password) {
+    await this.passwordInput().fill(password);
   }
 
-  async expectErrorOnPage() {
-    await expect(this.page).toHaveURL("/login");
-    await expect(this.errorMessage).toBeVisible();
-  }
-
-  async expectEmailError() {
-    await expect(this.emailError).toBeVisible();
-  }
-
-  async expectPasswordError() {
-    await expect(this.passwordError).toBeVisible();
+  async waitForToast() {
+    await this.toastMessage().waitFor({ state: "visible", timeout: 5000 });
+    return this.toastMessage();
   }
 }
+
+module.exports = { LoginPage };
